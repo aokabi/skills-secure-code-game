@@ -21,6 +21,8 @@ on:
 jobs:
   jarvis:
     runs-on: ubuntu-latest
+    permissions:
+      contents: none
     steps:
       - name: Check out code
         uses: actions/checkout@v4
