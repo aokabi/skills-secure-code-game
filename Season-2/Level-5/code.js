@@ -57,5 +57,7 @@ var CryptoAPI = (function() {
 		}) // End "sha1"
 	}; // End "API"
 
+	Object.preventExtensions(Array.prototype)
+
 	return API; // End body of anonymous function
 })(); // End "CryptoAPI"
