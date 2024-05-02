@@ -15,6 +15,9 @@ var CryptoAPI = (function() {
 			size: 20,
 			block: 64,
 			hash: function(s) {
+				if (typeof s != "string") {
+					return 
+				}
 				var len = (s += '\x80').length,
 					blocks = len >> 6,
 					chunk = len & 63,
