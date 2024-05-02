@@ -9,7 +9,7 @@ var CryptoAPI = (function() {
 	};
 
 	var API = {
-		sha1: {
+		sha1: Object.freeze({
 			name: 'sha1',
 			identifier: '2b0e03021a',
 			size: 20,
@@ -54,7 +54,7 @@ var CryptoAPI = (function() {
 				return res;
 			}, // End "hash"
 			_round: function(H, w) { }
-		} // End "sha1"
+		}) // End "sha1"
 	}; // End "API"
 
 	return API; // End body of anonymous function
