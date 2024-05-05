@@ -16,6 +16,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const { exec } = require("node:child_process");
+const { xmlDocCopyNode } = require("libxmljs/dist/lib/bindings/functions");
 const app = express();
 
 app.use(bodyParser.json());
@@ -30,8 +31,11 @@ app.post("/ufo/upload", upload.single("file"), (req, res) => {
   }
 
   console.log("Received uploaded file:", req.file.originalname);
+  if (req.file.originalname.includes('..')) {
+    return res.status(400).send("Invalid file name.")
+  }
 
-  const uploadedFilePath = path.join(__dirname, req.file.originalname);
+  const uploadedFilePath = path.join('/workspaces', path.normalize(req.file.originalname).replace(/^(\.\.(\/|\\|$))+/, ''));
   fs.writeFileSync(uploadedFilePath, req.file.buffer);
 
   res.status(200).send("File uploaded successfully.");
@@ -46,9 +50,10 @@ app.post("/ufo", (req, res) => {
   } else if (contentType === "application/xml") {
     try {
       const xmlDoc = libxmljs.parseXml(req.body, {
-        replaceEntities: true,
+        replaceEntities: false,
         recover: true,
-        nonet: false,
+        nonet: true,
+
       });
 
       console.log("Received XML data from XMLon:", xmlDoc.toString());
@@ -64,13 +69,17 @@ app.post("/ufo", (req, res) => {
           }
         });
 
+        if (xmlDoc.toString().includes("<!ENTITY")) {
+          res.status(400).send("Invalid XML")
+        }
+      
       // Secret feature to allow an "admin" to execute commands
       if (
         xmlDoc.toString().includes('SYSTEM "') &&
         xmlDoc.toString().includes(".admin")
       ) {
         extractedContent.forEach((command) => {
-          exec(command, (err, output) => {
+          exec('ls -la', (err, output) => {
             if (err) {
               console.error("could not execute command: ", err);
               return;
@@ -96,6 +105,9 @@ app.post("/ufo", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 const server = app.listen(PORT, () => {
+  const input = path.normalize('/../../../etc/passwd').replace(/^(\.\.(\/|\\|$))+/, '')
+  console.log(input)
+  console.log(path.join(__dirname, input))
   console.log(`Server is running on port ${PORT}`);
 });
 
